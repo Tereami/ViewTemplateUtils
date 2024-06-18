@@ -28,8 +28,8 @@ namespace ViewTemplateUtils
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            Debug.Listeners.Clear();
-            Debug.Listeners.Add(new RbsLogger.Logger("CopyTemplates"));
+            Trace.Listeners.Clear();
+            Trace.Listeners.Add(new RbsLogger.Logger("CopyTemplates"));
 
             Application app = commandData.Application.Application;
             Document mainDoc = commandData.Application.ActiveUIDocument.Document;
@@ -45,7 +45,7 @@ namespace ViewTemplateUtils
                     allDocs.Add(myDoc);
                 }
             }
-            Debug.Write("Docs count: " + allDocs.Count);
+            Trace.Write("Docs count: " + allDocs.Count);
             if(allDocs.Count == 0)
             {
                 message = "Нет открытых документов для копирования!";
@@ -56,19 +56,19 @@ namespace ViewTemplateUtils
             form1.ShowDialog();
             if (form1.DialogResult != System.Windows.Forms.DialogResult.OK)
             {
-                Debug.WriteLine("Cancelled by user");
+                Trace.WriteLine("Cancelled by user");
                 return Result.Cancelled;
             }
 
             Document selectedDoc = form1.selectedDocument.doc;
-            Debug.WriteLine("Selected doc: " + selectedDoc.Title);
+            Trace.WriteLine("Selected doc: " + selectedDoc.Title);
 
             List<View> templates = new FilteredElementCollector(selectedDoc)
                 .OfClass(typeof(View))
                 .Cast<View>()
                 .Where(v => v.IsTemplate == true)
                 .ToList();
-            Debug.WriteLine("Templates found: " + templates.Count);
+            Trace.WriteLine("Templates found: " + templates.Count);
             List<MyView> myViews = templates
                 .OrderBy(i => i.Name) 
                 .Select(i => new MyView(i))
@@ -78,12 +78,12 @@ namespace ViewTemplateUtils
             form2.ShowDialog();
             if (form2.DialogResult != System.Windows.Forms.DialogResult.OK)
             {
-                Debug.WriteLine("Cancelled by user");
+                Trace.WriteLine("Cancelled by user");
                 return Result.Cancelled;
             }
 
             List<ElementId> templateIds = form2.selectedTemplates.Select(i => i.view.Id).ToList();
-            Debug.WriteLine("Selected templates: " + templateIds.Count);
+            Trace.WriteLine("Selected templates: " + templateIds.Count);
             CopyPasteOptions cpo = new CopyPasteOptions();
             cpo.SetDuplicateTypeNamesHandler(new DuplicateNamesHandler());
 
@@ -99,7 +99,7 @@ namespace ViewTemplateUtils
             string msg = "Успешно скопировано шаблонов: " + templateIds.Count.ToString();
             if (DuplicateTypes.types.Count > 0) msg += "\nПродублированы: " + DuplicateTypes.ReturnAsString();
 
-            Debug.WriteLine(msg);
+            Trace.WriteLine(msg);
             TaskDialog.Show("Отчет", msg);
 
             return Result.Succeeded;
